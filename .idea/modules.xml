@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/recruitment-system-backend.iml" filepath="$PROJECT_DIR$/.idea/recruitment-system-backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tracking-application-service/tracking-application-service.iml" filepath="$PROJECT_DIR$/tracking-application-service/tracking-application-service.iml" />
+    </modules>
+  </component>
+</project>
