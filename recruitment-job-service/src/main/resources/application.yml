@@ -27,6 +27,8 @@ spring:
     # Whether to use the message code as the default message instead of throwing a "NoSuchMessageException".
     # Recommended during development only.
     use-code-as-default-message: false
+  application:
+    name: job-service
 
 jwt:
   secret: jaklsdj1283e7osalkd
@@ -53,14 +55,11 @@ logging:
     org.hibernate.engine.transaction.internal.TransactionImpl: INFO
     org.hibernate.engine.jdbc.batch.internal: ERROR
 
-minio:
-  buckek:
-    name:
-  access:
-    name: ${MINIO_ROOT_USER}
-    secret: ${MINIO_ROOT_PASSWORD}
-  url:
-  endpoint: ${HTTPS_DOMAIN}
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
 
-app:
-  firebase-configuration-file:
+

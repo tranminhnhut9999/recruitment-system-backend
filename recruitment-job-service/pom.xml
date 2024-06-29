@@ -8,6 +8,17 @@
         <version>2.7.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>2021.0.6</version> <!-- Latest in the 2021.0.x series -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <groupId>project.springboot</groupId>
     <artifactId>jobs-ervice</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -142,6 +153,12 @@
             <artifactId>lombok</artifactId>
             <version>1.18.16</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-eureka-client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
     </dependencies>
 
