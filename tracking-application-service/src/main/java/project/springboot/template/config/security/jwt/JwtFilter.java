@@ -7,7 +7,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import project.springboot.template.config.security.EscapeUrlConfig;
 import project.springboot.template.config.security.TokenHolder;
 import project.springboot.template.entity.common.ApiException;
 import project.springboot.template.entity.common.ApiResponse;
@@ -27,10 +29,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final HttpService httpService;
-
-
-    private final List<String> escapeURLs =
-            new ArrayList<>(Arrays.asList("/api/jobs/hiring", "api-docs/swagger-config", "api-docs", "swagger-ui"));
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 
     public JwtFilter(JwtUtil jwtUtil, HttpService httpService) {
@@ -42,9 +41,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
+        String method = request.getMethod();
 
-        long count = this.escapeURLs.stream().filter(url -> url.contains(requestURI) || requestURI.contains(url)).count();
-        if (count > 0) {
+        if (EscapeUrlConfig.shouldBypassAuthentication(antPathMatcher, requestURI, method)) {
             filterChain.doFilter(request, response);
             return;
         }

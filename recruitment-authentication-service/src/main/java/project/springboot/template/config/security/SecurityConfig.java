@@ -57,21 +57,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+
+        for (EscapeUrlConfig.EscapeUrl escapeUrl : EscapeUrlConfig.getEscapeUrls()) {
+            String url = escapeUrl.getUrl();
+            http.authorizeRequests()
+                    .antMatchers(url).permitAll();
+        }
         // permit all swagger api
-        http.authorizeRequests()
-                .antMatchers("/swagger-ui/**").permitAll()
-                .antMatchers("/v3/api-docs/**").permitAll();
+//        http.authorizeRequests()
+//                .antMatchers("/swagger-ui/**").permitAll()
+//                .antMatchers("/v3/api-docs/**").permitAll();
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // permit all login api
-        http.authorizeRequests().antMatchers("/api/auth/login").permitAll();
-        http.authorizeRequests().antMatchers("/api/auth/logout").permitAll();
-        http.authorizeRequests().antMatchers("/api/accounts/register").permitAll();
+//        // permit all login api
+//        http.authorizeRequests().antMatchers("/api/auth/login").permitAll();
+//        http.authorizeRequests().antMatchers("/api/auth/logout").permitAll();
+//        http.authorizeRequests().antMatchers("/api/accounts/register").permitAll();
+//
+//        http.authorizeRequests().antMatchers("/api/page-content/**").permitAll();
 
-        http.authorizeRequests().antMatchers("/api/page-content/**").permitAll();
-
-        http.authorizeRequests().antMatchers("/ws/**").permitAll();
+//        http.authorizeRequests().antMatchers("/ws/**").permitAll();
 
         http.authorizeRequests().anyRequest().authenticated();
         // config oauth2 resource

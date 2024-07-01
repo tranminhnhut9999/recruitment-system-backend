@@ -6,7 +6,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import project.springboot.template.config.security.EscapeUrlConfig;
 import project.springboot.template.config.security.jwt.model.UserDetailsImpl;
 import project.springboot.template.entity.common.ApiException;
 import project.springboot.template.entity.common.ApiResponse;
@@ -17,6 +19,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.file.PathMatcher;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -24,6 +30,9 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUserDetailServiceImpl userDetailsService;
 
     private final JwtUtil jwtUtil;
+
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public JwtFilter(JwtUserDetailServiceImpl userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
@@ -34,33 +43,10 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if ("/api/auth/login".equals(requestURI)) {
+        if (EscapeUrlConfig.shouldBypassAuthentication(this.pathMatcher, requestURI, request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
-        if ("/api/auth/logout".equals(requestURI)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if ("/api/accounts/register".equals(requestURI)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        // config for swagger
-        if (requestURI.contains("api-docs/swagger-config")
-                || requestURI.contains("api-docs")
-                || requestURI.contains("swagger-ui")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String method = request.getMethod();
-        // page content
-        if (requestURI.contains("/api/page-content/code") && request.getMethod().equals(HttpMethod.GET.name())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
 
         String tokenHeader = request.getHeader("Authorization");
         String username = null;
@@ -107,4 +93,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         response.getWriter().write(MapperUtil.getInstance().getMapper().writeValueAsString(apiResponse));
     }
+
+
 }

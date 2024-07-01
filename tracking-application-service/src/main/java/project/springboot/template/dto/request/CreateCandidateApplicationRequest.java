@@ -13,9 +13,7 @@ public class CreateCandidateApplicationRequest {
     private String phoneNumber;
     private Instant dateOfBirth;
     private String address;
-    private String cvUrl;
     private Long jobId;
     private Instant applyDate;
-    private String interviewer;
     private MultipartFile cvFile;
 }

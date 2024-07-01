@@ -52,19 +52,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // permit all swagger api
-        http.authorizeRequests()
-                .antMatchers("/swagger-ui/**").permitAll()
-                .antMatchers("/v3/api-docs/**").permitAll();
+//        http.authorizeRequests()
+//                .antMatchers("/swagger-ui/**").permitAll()
+//                .antMatchers("/v3/api-docs/**").permitAll();
 
+        for (EscapeUrlConfig.EscapeUrl escapeUrl : EscapeUrlConfig.getEscapeUrls()) {
+            String url = escapeUrl.getUrl();
+            http.authorizeRequests()
+                    .antMatchers(url).permitAll();
+        }
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-        http.authorizeRequests().antMatchers("/api/jobs/hiring/**").permitAll();
-
-        http.authorizeRequests().antMatchers("/api/page-content/**").permitAll();
-
-        http.authorizeRequests().antMatchers("/ws/**").permitAll();
-
         http.authorizeRequests().anyRequest().authenticated();
+//        http.authorizeRequests().antMatchers("/api/jobs/hiring/**").permitAll();
+//
+//        http.authorizeRequests().antMatchers("/api/page-content/**").permitAll();
+//
+//        http.authorizeRequests().antMatchers("/ws/**").permitAll();
+
         // config oauth2 resource
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
 
@@ -72,3 +76,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 }
+

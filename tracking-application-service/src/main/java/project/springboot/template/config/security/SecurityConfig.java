@@ -44,31 +44,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
-
         http.cors();
-
-//        http.anonymous().disable();
-
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        // permit all swagger api
-        http.authorizeRequests()
-                .antMatchers("/swagger-ui/**").permitAll()
-                .antMatchers("/v3/api-docs/**").permitAll();
-
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-        http.authorizeRequests().antMatchers("/api/jobs/hiring/**").permitAll();
-
-        http.authorizeRequests().antMatchers("/api/page-content/**").permitAll();
-
-        http.authorizeRequests().antMatchers("/ws/**").permitAll();
-
+        for (EscapeUrlConfig.EscapeUrl escapeUrl : EscapeUrlConfig.getEscapeUrls()) {
+            String url = escapeUrl.getUrl();
+            http.authorizeRequests()
+                    .antMatchers(url).permitAll();
+        }
         http.authorizeRequests().anyRequest().authenticated();
-        // config oauth2 resource
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
 
     }
-
-
 }
+
