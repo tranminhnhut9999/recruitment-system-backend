@@ -1,5 +1,7 @@
 package project.springboot.template.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.minio.ObjectWriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +49,14 @@ public class CandidateApplicationService {
     private final MinioService minioService;
     @Value("${minio.endpoint}")
     String minioUrl;
+    private final ObjectMapper objectMapper;
 
-    public CandidateApplicationService(CandidateApplicationRepository candidateApplicationRepository, StatusLogRepository statusLogRepository, HttpService httpService, MinioService minioService) {
+    public CandidateApplicationService(CandidateApplicationRepository candidateApplicationRepository, StatusLogRepository statusLogRepository, HttpService httpService, MinioService minioService, ObjectMapper objectMapper) {
         this.candidateApplicationRepository = candidateApplicationRepository;
         this.statusLogRepository = statusLogRepository;
         this.httpService = httpService;
         this.minioService = minioService;
+        this.objectMapper = objectMapper;
     }
 
     public List<CandidateApplicationResponse> getAllByQuery(GetApplicationRequest query) {
@@ -90,7 +94,8 @@ public class CandidateApplicationService {
         JobResponse appliedJob = null;
         ApiResponse<JobResponse> response = this.httpService.<JobResponse>get("http://localhost:8082/api/jobs/hiring/" + jobId, new HashMap<>(), TokenHolder.getToken());
         if (Objects.equals(response.getStatusCode(), "OK")) {
-            appliedJob = response.getData();
+            appliedJob = objectMapper.convertValue(response.getData(), new TypeReference<JobResponse>() {
+            });
         }
         if (appliedJob == null) {
             throw ApiException.create(HttpStatus.NOT_FOUND).withMessage("Không tìm thấy công việc đang tuyển");

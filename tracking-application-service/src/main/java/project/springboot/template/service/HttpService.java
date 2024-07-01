@@ -1,12 +1,16 @@
 package project.springboot.template.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import project.springboot.template.dto.response.JobResponse;
 import project.springboot.template.entity.common.ApiResponse;
 
 import java.util.Map;
@@ -16,10 +20,11 @@ import java.util.StringJoiner;
 @RequiredArgsConstructor
 public class HttpService {
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     public <T> ApiResponse<T> get(String url, Map<String, Object> parameters, String jwtToken) {
         HttpHeaders headers = new HttpHeaders();
-        if (!jwtToken.isEmpty()) {
+        if (jwtToken != null && !jwtToken.isEmpty()) {
             headers.set("Authorization", "Bearer " + jwtToken);
         }
         HttpEntity<T> entity = new HttpEntity<>(headers);

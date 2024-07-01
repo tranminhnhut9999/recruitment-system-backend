@@ -11,8 +11,7 @@ public class EscapeUrlConfig {
     private static final List<EscapeUrl> escapeUrls = new ArrayList<>();
 
     static {
-        escapeUrls.add(new EscapeUrl("/api/jobs/hiring", "GET"));
-        escapeUrls.add(new EscapeUrl("/api/jobs/hiring/**", "GET"));
+        escapeUrls.add(new EscapeUrl("/api/applications/**", "POST"));
         escapeUrls.add(new EscapeUrl("api-docs/swagger-config", "GET"));
         escapeUrls.add(new EscapeUrl("/swagger-ui/**", "GET"));
         escapeUrls.add(new EscapeUrl("api-docs", "GET"));
