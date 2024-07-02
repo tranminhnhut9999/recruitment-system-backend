@@ -1,6 +1,9 @@
 package project.springboot.template.service;
 
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,6 +19,7 @@ import java.util.StringJoiner;
 @RequiredArgsConstructor
 public class HttpService {
     private final RestTemplate restTemplate;
+    private final EurekaClient eurekaClient;
 
     public <T> ApiResponse<T> get(String url, Map<String, Object> parameters, String jwtToken) {
         HttpHeaders headers = new HttpHeaders();

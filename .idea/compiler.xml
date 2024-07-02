@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="service-discovery" />
       </profile>
-      <profile name="Annotation profile for Tracking application service" enabled="true">
+      <profile name="Annotation profile for Job Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />

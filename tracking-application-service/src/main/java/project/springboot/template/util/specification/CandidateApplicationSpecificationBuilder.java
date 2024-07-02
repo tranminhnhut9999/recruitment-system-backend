@@ -19,7 +19,7 @@ public class CandidateApplicationSpecificationBuilder {
     private final List<Specification<CandidateApplication>> specifications = new ArrayList<>();
 
     public CandidateApplicationSpecificationBuilder byStatus(EApplyStatus status) {
-        if (status == null) {
+        if (status == null || status == EApplyStatus.ALL) {
             return this;
         }
         specifications.add((root, query, criteriaBuilder) ->

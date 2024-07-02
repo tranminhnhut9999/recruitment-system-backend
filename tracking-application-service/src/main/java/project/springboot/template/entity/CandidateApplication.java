@@ -25,6 +25,7 @@ public class CandidateApplication extends BaseEntity {
     private Long jobId;
     private Instant applyDate;
     private String interviewer;
+    @Enumerated(EnumType.STRING)
     private EApplyStatus status;
     @OneToMany(mappedBy = "candidateApplication", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<StatusLog> statusLogs = new ArrayList<>();

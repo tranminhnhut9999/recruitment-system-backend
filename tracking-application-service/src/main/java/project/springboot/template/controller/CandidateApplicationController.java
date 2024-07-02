@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import project.springboot.template.constant.EApplyStatus;
 import project.springboot.template.dto.request.ChangeStatusApplicationRequest;
 import project.springboot.template.dto.request.CreateCandidateApplicationRequest;
 import project.springboot.template.dto.request.GetApplicationRequest;
@@ -33,9 +34,12 @@ public class CandidateApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> getCandidateApplication(@RequestParam GetApplicationRequest request) {
+    public ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> getCandidateApplication(@RequestParam("status") EApplyStatus status,
+                                                                                                   @RequestParam("jobId") Long jobId,
+                                                                                                   @RequestParam("interviewEmail") String interviewEmail) {
+        GetApplicationRequest getApplicationRequest = new GetApplicationRequest(status, jobId, interviewEmail);
         // Your logic here
-        return ResponseEntity.ok(ApiResponse.success(this.candidateApplicationService.getAllByQuery(request)));
+        return ResponseEntity.ok(ApiResponse.success(this.candidateApplicationService.getAllByQuery(getApplicationRequest)));
     }
 
     @GetMapping("/{id}")
@@ -63,5 +67,4 @@ public class CandidateApplicationController {
         // Your logic here
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(s));
     }
-
 }

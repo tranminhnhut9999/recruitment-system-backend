@@ -1,4 +1,4 @@
-package project.springboot.template.constant;
+package project.springboot.template.clients.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

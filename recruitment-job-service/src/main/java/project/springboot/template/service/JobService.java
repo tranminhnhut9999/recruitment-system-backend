@@ -1,13 +1,19 @@
 package project.springboot.template.service;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import project.springboot.template.clients.TrackingApplicationClient;
+import project.springboot.template.clients.models.CandidateApplicationResponse;
+import project.springboot.template.clients.models.EApplyStatus;
+import project.springboot.template.config.security.TokenHolder;
 import project.springboot.template.dto.request.CreateJobRequest;
 import project.springboot.template.dto.request.UpdateJobRequest;
 import project.springboot.template.dto.response.JobDetailResponse;
 import project.springboot.template.dto.response.JobResponse;
 import project.springboot.template.entity.Job;
 import project.springboot.template.entity.common.ApiException;
+import project.springboot.template.entity.common.ApiResponse;
 import project.springboot.template.repository.JobRepository;
 import project.springboot.template.util.ObjectUtil;
 
@@ -19,9 +25,13 @@ import java.util.stream.Collectors;
 @Transactional
 public class JobService {
     private final JobRepository jobRepository;
+    private final HttpService httpService;
+    private final TrackingApplicationClient trackingApplicationClient;
 
-    public JobService(JobRepository jobRepository) {
+    public JobService(JobRepository jobRepository, HttpService request, TrackingApplicationClient trackingApplicationClient) {
         this.jobRepository = jobRepository;
+        this.httpService = request;
+        this.trackingApplicationClient = trackingApplicationClient;
     }
 
     public JobDetailResponse createJob(CreateJobRequest createJobRequest) {
@@ -71,8 +81,20 @@ public class JobService {
                 .map(job -> {
                     JobResponse jobResponse = ObjectUtil.copyProperties(job, new JobResponse(), JobResponse.class, true);
                     jobResponse.setKeywords(this.extractKeyword(job.getKeywords()));
+
+                    ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> response =
+                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.APPLYING, job.getId(), "");
+                    if (Objects.equals(Objects.requireNonNull(response.getBody()).getStatusCode(), HttpStatus.OK.getReasonPhrase())) {
+                        List<CandidateApplicationResponse> data = response.getBody().getData();
+                        if (data == null) {
+                            jobResponse.setNumberApplications(0);
+                        } else {
+                            jobResponse.setNumberApplications(data.size());
+                        }
+                    }
                     return jobResponse;
                 }).collect(Collectors.toList());
+
 
         return jobResponses;
     }

@@ -29,4 +29,5 @@ public class JobResponse {
     private Set<String> recruiters = new HashSet<>();
     private String jobType = "";
     private String workingPlace = "";
+    private int numberApplications = 0;
 }
