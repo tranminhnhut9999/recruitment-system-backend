@@ -36,7 +36,7 @@ public class CandidateApplicationController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> getCandidateApplication(@RequestParam("status") EApplyStatus status,
                                                                                                    @RequestParam("jobId") Long jobId,
-                                                                                                   @RequestParam("interviewEmail") String interviewEmail) {
+                                                                                                   @RequestParam(value = "interviewEmail", required = false) String interviewEmail) {
         GetApplicationRequest getApplicationRequest = new GetApplicationRequest(status, jobId, interviewEmail);
         // Your logic here
         return ResponseEntity.ok(ApiResponse.success(this.candidateApplicationService.getAllByQuery(getApplicationRequest)));
