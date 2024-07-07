@@ -6,6 +6,7 @@ import project.springboot.template.dto.request.GetApplicationRequest;
 import project.springboot.template.entity.CandidateApplication;
 import project.springboot.template.entity.CandidateApplication_;
 
+import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +44,11 @@ public class CandidateApplicationSpecificationBuilder {
             return this;
         }
         specifications.add((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(CandidateApplication_.INTERVIEWER), interviewEmail)
+                {
+                    Predicate byInterviewEmailPredicate = criteriaBuilder.equal(root.get(CandidateApplication_.INTERVIEWER), interviewEmail);
+                    Predicate byApplyingStatusPredicate = criteriaBuilder.equal(root.get(CandidateApplication_.STATUS), EApplyStatus.APPLYING);
+                    return criteriaBuilder.or(byInterviewEmailPredicate, byApplyingStatusPredicate);
+                }
         );
         return this;
     }
