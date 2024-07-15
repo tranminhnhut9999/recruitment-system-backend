@@ -20,7 +20,7 @@
         </dependencies>
     </dependencyManagement>
     <groupId>project.springboot</groupId>
-    <artifactId>jobs-ervice</artifactId>
+    <artifactId>jobs-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Job Service</name>
     <description>Spring Boot Template Project</description>

@@ -55,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
             token = tokenHeader.substring(7);
             try {
                 username = jwtUtil.getUsernameFromToken(token);
-                TokenHolder.setToken(username);
+                TokenHolder.setToken(token);
             } catch (Exception e) {
                 handleGetUsername(e, response);
                 return;

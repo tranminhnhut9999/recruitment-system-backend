@@ -22,7 +22,7 @@
     <groupId>project.springboot</groupId>
     <artifactId>tracking-application-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Tracking application service</name>
+    <name>Tracking Application Service</name>
     <description>Spring Boot Template Project</description>
     <properties>
         <java.version>11</java.version>
@@ -151,6 +151,10 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
     </dependencies>
 

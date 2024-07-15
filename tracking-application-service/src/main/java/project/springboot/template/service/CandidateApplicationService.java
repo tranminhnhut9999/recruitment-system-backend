@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import project.springboot.template.clients.EmailClient;
+import project.springboot.template.clients.models.SendEmailRequest;
 import project.springboot.template.config.security.TokenHolder;
 import project.springboot.template.constant.EApplyStatus;
 import project.springboot.template.dto.request.ChangeStatusApplicationRequest;
@@ -31,6 +33,7 @@ import project.springboot.template.util.UrlUtil;
 import project.springboot.template.util.specification.CandidateApplicationSpecificationBuilder;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -50,13 +53,15 @@ public class CandidateApplicationService {
     @Value("${minio.endpoint}")
     String minioUrl;
     private final ObjectMapper objectMapper;
+    private final EmailClient emailClient;
 
-    public CandidateApplicationService(CandidateApplicationRepository candidateApplicationRepository, StatusLogRepository statusLogRepository, HttpService httpService, MinioService minioService, ObjectMapper objectMapper) {
+    public CandidateApplicationService(CandidateApplicationRepository candidateApplicationRepository, StatusLogRepository statusLogRepository, HttpService httpService, MinioService minioService, ObjectMapper objectMapper, EmailClient emailClient) {
         this.candidateApplicationRepository = candidateApplicationRepository;
         this.statusLogRepository = statusLogRepository;
         this.httpService = httpService;
         this.minioService = minioService;
         this.objectMapper = objectMapper;
+        this.emailClient = emailClient;
     }
 
     public List<CandidateApplicationResponse> getAllByQuery(GetApplicationRequest query) {
@@ -109,13 +114,13 @@ public class CandidateApplicationService {
         candidateApplication.setAddress(request.getAddress());
         candidateApplication.setJobId(jobId);
         candidateApplication.setStatus(EApplyStatus.APPLYING);
-
+        candidateApplication.setApplyDate(Instant.now());
 
         // Upload CV and then set the URL
         MultipartFile cvFile = request.getCvFile();
         if (cvFile != null) {
             try {
-                ObjectWriteResponse objectResponse = this.minioService.uploadFile(cvFile.getName(), cvFile.getContentType(), cvFile.getInputStream(), cvFile.getSize());
+                ObjectWriteResponse objectResponse = this.minioService.uploadFile(cvFile.getOriginalFilename() + Instant.now().toString(), cvFile.getContentType(), cvFile.getInputStream(), cvFile.getSize());
                 String accessResourceURL = UrlUtil.buildUrl(minioUrl, objectResponse);
                 candidateApplication.setCvUrl(accessResourceURL);
             } catch (IOException e) {
@@ -141,11 +146,27 @@ public class CandidateApplicationService {
         statusLog.setStatus(request.getStatus());
         statusLog.setCandidateApplication(candidateApplication);
         statusLog.setNote(request.getNote());
+        statusLog.setCreateTime(Instant.now());
 
-        candidateApplication.getStatusLogs().add(statusLog);
+        candidateApplication.setInterviewer(emailOptional);
+        candidateApplication.setStatus(request.getStatus());
 
         this.candidateApplicationRepository.save(candidateApplication);
         this.statusLogRepository.save(statusLog);
+
+        // If isSendMail = true => Send Email
+        if (request.getIsSendMail()) {
+            // SEND MAIL
+            SendEmailRequest sendEmailRequest = new SendEmailRequest();
+            sendEmailRequest.setHtml(true);
+            sendEmailRequest.setRecipient(candidateApplication.getEmail());
+            sendEmailRequest.setContent(request.getMailContent());
+            sendEmailRequest.setSubject("Hồ Sơ Của Bạn Đã Được Chuyển Trạng Thái " + statusLog.getStatus().getName());
+            String token = "Bearer " + TokenHolder.getToken();
+            log.info("TOKEN:"+token);
+            emailClient.sendEmail(token, sendEmailRequest);
+        }
+
         return ObjectUtil.copyProperties(statusLog, new StatusLogResponse(), StatusLogResponse.class, true);
     }
 }

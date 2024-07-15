@@ -16,6 +16,7 @@ import project.springboot.template.entity.common.ApiException;
 import project.springboot.template.entity.common.ApiResponse;
 import project.springboot.template.repository.JobRepository;
 import project.springboot.template.util.ObjectUtil;
+import project.springboot.template.util.SecurityUtil;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -81,9 +82,9 @@ public class JobService {
                 .map(job -> {
                     JobResponse jobResponse = ObjectUtil.copyProperties(job, new JobResponse(), JobResponse.class, true);
                     jobResponse.setKeywords(this.extractKeyword(job.getKeywords()));
-
+                    String userEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN).withMessage("Không tìm thấy email"));
                     ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> response =
-                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.APPLYING, job.getId(), "");
+                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.ALL, job.getId(), userEmail);
                     if (Objects.equals(Objects.requireNonNull(response.getBody()).getStatusCode(), HttpStatus.OK.getReasonPhrase())) {
                         List<CandidateApplicationResponse> data = response.getBody().getData();
                         if (data == null) {

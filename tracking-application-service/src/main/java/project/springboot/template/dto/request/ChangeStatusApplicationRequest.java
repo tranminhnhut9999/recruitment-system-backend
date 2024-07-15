@@ -7,4 +7,6 @@ import project.springboot.template.constant.EApplyStatus;
 public class ChangeStatusApplicationRequest {
     private EApplyStatus status;
     private String note;
+    private Boolean isSendMail = false;
+    private String mailContent = "";
 }

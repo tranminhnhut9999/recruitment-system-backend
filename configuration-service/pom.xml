@@ -22,7 +22,7 @@
     <groupId>project.springboot</groupId>
     <artifactId>configuration-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Job Service</name>
+    <name>Configuration Service</name>
     <description>Spring Boot Template Project</description>
     <properties>
         <java.version>11</java.version>
