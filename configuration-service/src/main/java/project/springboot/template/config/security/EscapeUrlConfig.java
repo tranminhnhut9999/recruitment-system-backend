@@ -15,6 +15,8 @@ public class EscapeUrlConfig {
         escapeUrls.add(new EscapeUrl("/api/configuration/job-types/**", "GET"));
         escapeUrls.add(new EscapeUrl("/api/configuration/departments", "GET"));
         escapeUrls.add(new EscapeUrl("/api/configuration/departments/**", "GET"));
+        escapeUrls.add(new EscapeUrl("/api/configuration/skills", "GET"));
+        escapeUrls.add(new EscapeUrl("/api/configuration/skills/**", "GET"));
         escapeUrls.add(new EscapeUrl("api-docs/swagger-config", "GET"));
         escapeUrls.add(new EscapeUrl("/swagger-ui/**", "GET"));
         escapeUrls.add(new EscapeUrl("api-docs", "GET"));
