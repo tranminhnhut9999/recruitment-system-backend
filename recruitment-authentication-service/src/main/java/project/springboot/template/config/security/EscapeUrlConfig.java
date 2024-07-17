@@ -14,6 +14,7 @@ public class EscapeUrlConfig {
         escapeUrls.add(new EscapeUrl("/api/auth/login", "POST"));
         escapeUrls.add(new EscapeUrl("/api/accounts/register", "POST"));
         escapeUrls.add(new EscapeUrl("api-docs/swagger-config", "GET"));
+        escapeUrls.add(new EscapeUrl("/api/roles", "GET"));
         escapeUrls.add(new EscapeUrl("/swagger-ui/**", "GET"));
         escapeUrls.add(new EscapeUrl("api-docs", "GET"));
         escapeUrls.add(new EscapeUrl("/v3/api-docs/**", "GET"));

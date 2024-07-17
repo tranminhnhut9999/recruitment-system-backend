@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.springboot.template.dto.request.*;
 import project.springboot.template.dto.response.ProfileResponse;
+import project.springboot.template.dto.response.RoleResponse;
 import project.springboot.template.entity.common.ApiResponse;
 import project.springboot.template.service.AccountService;
 
@@ -31,7 +32,7 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success(message));
     }
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<ApiResponse<String>> register(
             @RequestBody RegisterRequest request
     ) {
@@ -93,4 +94,11 @@ public class AccountController {
     public ResponseEntity<ApiResponse<List<ProfileResponse>>> getRecruiters() {
         return ResponseEntity.ok(ApiResponse.success(this.accountService.getAccountByRole("HR_STAFF")));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ProfileResponse>>> getAllAccount() {
+        return ResponseEntity.ok(ApiResponse.success(this.accountService.getAllAccounts()));
+    }
+
+
 }

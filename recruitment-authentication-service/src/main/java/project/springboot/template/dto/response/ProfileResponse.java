@@ -6,6 +6,7 @@ import project.springboot.template.config.constants.EEduLevel;
 import project.springboot.template.config.constants.EGender;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Data
 public class ProfileResponse {
@@ -13,7 +14,6 @@ public class ProfileResponse {
     private String firstname;
     private String lastname;
     private String email;
-    private String password;
     private RoleResponse role;
     private String status = EAccountStatus.ACTIVATE.name();
     private String compPhone;
@@ -29,4 +29,5 @@ public class ProfileResponse {
     private String eduLevelDescription;
     private String genderCode;
     private String genderDescription;
+    private Instant dob;
 }

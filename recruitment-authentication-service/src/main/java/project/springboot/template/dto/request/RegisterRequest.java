@@ -6,19 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import project.springboot.template.config.constants.EAccountStatus;
 import project.springboot.template.config.constants.EEduLevel;
+import project.springboot.template.config.constants.EGender;
+
+import java.time.Instant;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    private Long id;
-    private String firstname;
-    private String lastname;
+    private String firstName;
+    private String lastName;
     private String email;
-    private String password;
-    private String roleCode;
+    private String role;
+    private EGender gender;
     private EAccountStatus status = EAccountStatus.ACTIVATE;
-    private String workingPlace;
-    private EEduLevel eduLevel;
+    private String department;
+    private Instant dob;
+    private String citizenID;
+    private String workingAddress;
 }

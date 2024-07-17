@@ -1,6 +1,7 @@
 package project.springboot.template.service;
 
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,9 +24,7 @@ import project.springboot.template.util.ObjectUtil;
 import project.springboot.template.util.SecurityUtil;
 
 import javax.transaction.Transactional;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,14 +71,17 @@ public class AccountService {
                 throw ApiException.create(HttpStatus.PRECONDITION_FAILED).withMessage("email has existed, please choose another one!");
             }
             Account.AccountBuilder accountBuilder = Account.builder()
+                    .firstname(request.getFirstName())
+                    .lastname(request.getLastName())
                     .email(request.getEmail())
-                    .firstname(request.getFirstname())
-                    .lastname(request.getLastname())
-                    .password(passwordEncoder.encode(request.getPassword().trim()))
-                    .status(request.getStatus())
-                    .workingPlace(request.getWorkingPlace());
+                    .gender(request.getGender())
+                    .status(EAccountStatus.ACTIVATE)
+                    .dob(request.getDob())
+                    .citizenID(request.getCitizenID())
+                    .workingPlace(request.getWorkingAddress())
+                    .password(passwordEncoder.encode(defaultPassword));
 
-            String roleCode = request.getRoleCode();
+            String roleCode = request.getRole();
             if (roleCode != null && !roleCode.isEmpty()) {
                 Role role = roleRepository.findRoleByCode(roleCode)
                         .orElseThrow(() -> ApiException.create(HttpStatus.PRECONDITION_FAILED).withMessage("not found role:" + roleCode));
@@ -96,6 +98,10 @@ public class AccountService {
 
     public ProfileResponse getUserProfileByUser() {
         Account account = SecurityUtil.getCurrentUserAccountLogin().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN));
+        return convertAccountToResponse(account);
+    }
+
+    private static @NotNull ProfileResponse convertAccountToResponse(Account account) {
         ProfileResponse profileResponse = ObjectUtil.copyProperties(account, new ProfileResponse(), ProfileResponse.class, true);
         if (account.getEduLevel() != null) {
             EEduLevel eduLevel = account.getEduLevel();
@@ -157,6 +163,33 @@ public class AccountService {
         return false;
     }
 
+    public List<ProfileResponse> getAllAccounts() {
+        Account currentAccount = SecurityUtil.getCurrentUserAccountLogin()
+                .orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN).withMessage("Tài khoàn không tìm thấy"));
+
+        Role role = currentAccount.getRole();
+        List<Account> accounts;
+        List<String> searchingAccountWithRoles;
+
+        switch (role.getCode()) {
+            case "ADMIN":
+                searchingAccountWithRoles = List.of("HR_MANAGER", "HR_STAFF");
+                accounts = this.accountRepository.findAllIsContainInRoleCode(searchingAccountWithRoles);
+                break;
+            case "HR_MANAGER":
+                searchingAccountWithRoles = List.of("HR_STAFF");
+                accounts = this.accountRepository.findAllIsContainInRoleCode(searchingAccountWithRoles);
+                break;
+            default:
+                throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Tài khoản không có quyền sử dụng chức năng");
+        }
+        if (!accounts.isEmpty()) {
+            return accounts.stream().map(AccountService::convertAccountToResponse).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     // There are some field that user could not update but only ADMIN can do that
     // One function for self update and one for admin
     private boolean selfUpdateProfile(Long accountId, UpdateProfileRequest request) {
@@ -166,4 +199,6 @@ public class AccountService {
     private boolean adminUpdateProfile(Long accountId, UpdateProfileRequest request) {
         return false;
     }
+
+
 }

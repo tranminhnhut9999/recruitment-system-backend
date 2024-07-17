@@ -9,6 +9,7 @@ import project.springboot.template.config.constants.EEduLevel;
 import project.springboot.template.config.constants.EGender;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -39,6 +40,7 @@ public class Account {
     private String emergencyContactName;
     private String emergencyPhoneNumber;
     private String avatarImg;
+    private Instant dob;
     @Enumerated(EnumType.STRING)
     private EEduLevel eduLevel;
     @Enumerated(EnumType.STRING)

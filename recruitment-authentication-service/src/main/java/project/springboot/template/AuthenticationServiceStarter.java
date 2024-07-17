@@ -52,6 +52,7 @@ public class AuthenticationServiceStarter {
     public void setInitData() {
         setInitRoles();
         setInitAdminAccount();
+        setInitHRAccount();
     }
 
     public void setInitRoles() {
@@ -93,6 +94,20 @@ public class AuthenticationServiceStarter {
                     .status(EAccountStatus.ACTIVATE)
                     .build();
             accountRepository.save(adminAccount);
+        }
+    }
+
+    public void setInitHRAccount() {
+        List<Account> adminAccounts = accountRepository.findByRole_Code("HR_MANAGER");
+        if (adminAccounts.isEmpty()) {
+            Role hrManagerRole = roleRepository.findRoleByCode("HR_MANAGER").orElseThrow(() -> new NotFoundException("Could not found HR Manager Role"));
+            Account hrManagerAccount = Account.builder()
+                    .email("hrmanager@gmail.com")
+                    .password(passwordEncoder.encode("hrmanager@123"))
+                    .role(hrManagerRole)
+                    .status(EAccountStatus.ACTIVATE)
+                    .build();
+            accountRepository.save(hrManagerAccount);
         }
     }
 
