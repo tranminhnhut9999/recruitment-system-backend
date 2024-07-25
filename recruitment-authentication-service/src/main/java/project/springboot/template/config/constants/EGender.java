@@ -6,8 +6,7 @@ import lombok.Getter;
 public enum EGender {
     MALE("Nam"),
     FEMALE("Nữ"),
-    NON_BINARY("Phi nhị phân"),
-    OTHER("Khác");
+    NON_BINARY("Phi nhị phân"), OTHER("Khác");
 
     private final String description;
 

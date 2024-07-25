@@ -46,7 +46,7 @@ public class AccountController {
 
     // API: InActive and Active account
     @PutMapping("/change-status")
-    public ResponseEntity<ApiResponse<String>> changeAccountStatus(ChangeAccountStatusRequest request) {
+    public ResponseEntity<ApiResponse<String>> changeAccountStatus(@RequestBody ChangeAccountStatusRequest request) {
         this.accountService.changeAccountStatus(request.getEmail(), request.getStatus());
         return ResponseEntity.ok(ApiResponse.success("change account status successful"));
     }

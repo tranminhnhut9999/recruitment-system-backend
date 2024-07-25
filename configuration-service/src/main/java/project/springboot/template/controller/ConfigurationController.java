@@ -5,14 +5,17 @@ import org.springframework.web.bind.annotation.*;
 import project.springboot.template.dto.request.DepartmentRequestDTO;
 import project.springboot.template.dto.request.JobTypeRequestDTO;
 import project.springboot.template.dto.request.SkillRequestDTO;
+import project.springboot.template.dto.request.WorkingAddressRequestDTO;
 import project.springboot.template.dto.response.DepartmentResponseDTO;
 import project.springboot.template.dto.response.JobTypeResponseDTO;
 import project.springboot.template.dto.response.SkillResponseDTO;
+import project.springboot.template.dto.response.WorkingAddressResponseDTO;
 import project.springboot.template.entity.common.ApiPage;
 import project.springboot.template.entity.common.ApiResponse;
 import project.springboot.template.service.DepartmentService;
 import project.springboot.template.service.JobTypeService;
 import project.springboot.template.service.SkillService;
+import project.springboot.template.service.WorkingAddressService;
 
 import java.util.List;
 
@@ -23,11 +26,13 @@ public class ConfigurationController {
     private final JobTypeService jobTypeService;
     private final DepartmentService departmentService;
     private final SkillService skillService;
+    private final WorkingAddressService workingAddressService;
 
-    public ConfigurationController(JobTypeService jobTypeService, JobTypeService jobTypeService1, DepartmentService departmentService, SkillService skillService) {
+    public ConfigurationController(JobTypeService jobTypeService, JobTypeService jobTypeService1, DepartmentService departmentService, SkillService skillService, WorkingAddressService workingAddressService) {
         this.jobTypeService = jobTypeService1;
         this.departmentService = departmentService;
         this.skillService = skillService;
+        this.workingAddressService = workingAddressService;
     }
 
     @PostMapping("/job-types")
@@ -93,5 +98,38 @@ public class ConfigurationController {
     @DeleteMapping("/skills/{id}")
     public ResponseEntity<ApiResponse<Boolean>> deleteSkillById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(this.skillService.deleteSkillById(id)));
+    }
+
+    /**
+     * Working Address Configuration
+     */
+    @PostMapping("/working-addresses")
+    public ResponseEntity<ApiResponse<WorkingAddressResponseDTO>> createWorkingAddress(@RequestBody WorkingAddressRequestDTO workingAddressRequestDTO) {
+        WorkingAddressResponseDTO workingAddressResponseDTO = workingAddressService.create(workingAddressRequestDTO);
+        return ResponseEntity.ok(ApiResponse.success(workingAddressResponseDTO));
+    }
+
+    @PutMapping("/working-addresses/{id}")
+    public ResponseEntity<ApiResponse<WorkingAddressResponseDTO>> updateWorkingAddress(@PathVariable Long id, @RequestBody WorkingAddressRequestDTO workingAddressRequestDTO) {
+        WorkingAddressResponseDTO workingAddressResponseDTO = workingAddressService.update(id, workingAddressRequestDTO);
+        return ResponseEntity.ok(ApiResponse.success(workingAddressResponseDTO));
+    }
+
+    @DeleteMapping("/working-addresses/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        workingAddressService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/working-addresses/{id}")
+    public ResponseEntity<ApiResponse<WorkingAddressResponseDTO>> getWorkingAddressById(@PathVariable Long id) {
+        WorkingAddressResponseDTO workingAddressResponseDTO = workingAddressService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(workingAddressResponseDTO));
+    }
+
+    @GetMapping("/working-addresses")
+    public ResponseEntity<ApiResponse<List<WorkingAddressResponseDTO>>> getAllWorkingAddress() {
+        List<WorkingAddressResponseDTO> workingAddressResponseDTOs = workingAddressService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(workingAddressResponseDTOs));
     }
 }

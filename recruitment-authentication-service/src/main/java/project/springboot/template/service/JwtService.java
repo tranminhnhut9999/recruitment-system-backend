@@ -47,11 +47,11 @@ public class JwtService {
                             request.getPassword())
             );
         } catch (DisabledException e) {
-            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("account was locked");
+            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Tài khoản đã bị vô hiệu hóa");
         } catch (BadCredentialsException e) {
-            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("user name or password is incorrect");
+            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Sai tài khoản hoặc mật khẩu");
         } catch (AuthenticationException e) {
-            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Invalid username or password");
+            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Sai tài khoản hoặc mật khẩu");
         }
         final UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(request.getUsername());
         Account account = userDetails.getAccount();

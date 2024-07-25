@@ -21,7 +21,6 @@ public class RegisterRequest {
     private String role;
     private EGender gender;
     private EAccountStatus status = EAccountStatus.ACTIVATE;
-    private String department;
     private Instant dob;
     private String citizenID;
     private String workingAddress;

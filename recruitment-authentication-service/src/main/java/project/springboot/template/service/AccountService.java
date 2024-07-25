@@ -103,6 +103,7 @@ public class AccountService {
 
     private static @NotNull ProfileResponse convertAccountToResponse(Account account) {
         ProfileResponse profileResponse = ObjectUtil.copyProperties(account, new ProfileResponse(), ProfileResponse.class, true);
+        profileResponse.setStatus(account.getStatus().name());
         if (account.getEduLevel() != null) {
             EEduLevel eduLevel = account.getEduLevel();
             profileResponse.setEduLevelCode(eduLevel.name());
