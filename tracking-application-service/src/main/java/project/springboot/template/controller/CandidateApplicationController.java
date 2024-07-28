@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/applications")
+@RequestMapping("/api/applications")
 public class CandidateApplicationController {
     private final CandidateApplicationService candidateApplicationService;
     private final MinioService minioService;

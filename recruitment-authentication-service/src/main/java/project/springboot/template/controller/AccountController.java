@@ -1,6 +1,7 @@
 package project.springboot.template.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.springboot.template.dto.request.*;
@@ -58,8 +59,8 @@ public class AccountController {
     }
 
     // API: Update Profile
-    @PutMapping("/{id}/profile")
-    public ResponseEntity<ApiResponse<Boolean>> updateProfile(@PathVariable Long id, @RequestBody UpdateProfileRequest request) {
+    @PostMapping(value = "/{id}/profile")
+    public ResponseEntity<ApiResponse<Boolean>> updateProfile(@PathVariable Long id, @ModelAttribute UpdateProfileRequest request) {
         // Your logic here
         return ResponseEntity.ok(ApiResponse.success(this.accountService.updateProfile(id, request)));
     }

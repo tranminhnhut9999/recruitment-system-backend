@@ -31,7 +31,6 @@ public class Account {
     private Role role;
     @Enumerated(EnumType.STRING)
     private EAccountStatus status = EAccountStatus.ACTIVATE;
-    private String compPhone;
     private String perPhone;
     private String workingPlace;
     private String perAddress1;
@@ -41,8 +40,6 @@ public class Account {
     private String emergencyPhoneNumber;
     private String avatarImg;
     private Instant dob;
-    @Enumerated(EnumType.STRING)
-    private EEduLevel eduLevel;
     @Enumerated(EnumType.STRING)
     private EGender gender;
 }

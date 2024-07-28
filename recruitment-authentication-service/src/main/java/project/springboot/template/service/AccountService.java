@@ -1,11 +1,16 @@
 package project.springboot.template.service;
 
+import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
 import project.springboot.template.config.constants.EAccountStatus;
 import project.springboot.template.config.constants.EEduLevel;
 import project.springboot.template.config.constants.EGender;
@@ -22,8 +27,11 @@ import project.springboot.template.repository.AccountRepository;
 import project.springboot.template.repository.RoleRepository;
 import project.springboot.template.util.ObjectUtil;
 import project.springboot.template.util.SecurityUtil;
+import project.springboot.template.util.UrlUtil;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,12 +40,16 @@ import java.util.stream.Collectors;
 @Transactional
 public class AccountService {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
 
     @Value("${jwt.defaultPassword}")
     private String defaultPassword;
+    private final MinioService minioService;
+    @Value("${minio.endpoint}")
+    String minioUrl;
 
     public boolean changePassword(ChangePasswordRequest request) {
         try {
@@ -104,12 +116,12 @@ public class AccountService {
     private static @NotNull ProfileResponse convertAccountToResponse(Account account) {
         ProfileResponse profileResponse = ObjectUtil.copyProperties(account, new ProfileResponse(), ProfileResponse.class, true);
         profileResponse.setStatus(account.getStatus().name());
-        if (account.getEduLevel() != null) {
-            EEduLevel eduLevel = account.getEduLevel();
-            profileResponse.setEduLevelCode(eduLevel.name());
-            profileResponse.setEduLevelDescription(eduLevel.getDescription());
-
-        }
+//        if (account.getEduLevel() != null) {
+//            EEduLevel eduLevel = account.getEduLevel();
+//            profileResponse.setEduLevelCode(eduLevel.name());
+//            profileResponse.setEduLevelDescription(eduLevel.getDescription());
+//
+//        }
         if (account.getGender() != null) {
             EGender gender = account.getGender();
             profileResponse.setGenderCode(gender.name());
@@ -157,11 +169,10 @@ public class AccountService {
         Account currentUser = SecurityUtil.getCurrentUserAccountLogin().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN));
         Role role = currentUser.getRole();
         if ((role.getCode().equals("ADMIN") || role.getCode().equals("HR_MANAGER")) && !accountId.equals(currentUser.getId())) {
-            this.adminUpdateProfile(accountId, request);
+            return this.adminUpdateProfile(accountId, request);
         } else {
-            this.selfUpdateProfile(accountId, request);
+            return this.selfUpdateProfile(accountId, request);
         }
-        return false;
     }
 
     public List<ProfileResponse> getAllAccounts() {
@@ -193,12 +204,50 @@ public class AccountService {
 
     // There are some field that user could not update but only ADMIN can do that
     // One function for self update and one for admin
+    // Field allow staff update: perAddress1, perAddress2, emergencyContactName, emergencyPhoneNumber, compPhone, perPhone, avatarImg
     private boolean selfUpdateProfile(Long accountId, UpdateProfileRequest request) {
-        return false;
+        Account currentStaff = SecurityUtil.getCurrentUserAccountLogin()
+                .orElseThrow(() -> ApiException.create(HttpStatus.METHOD_NOT_ALLOWED).withMessage("Không tìm thấy người dùng, vui lòng liên hệ admin"));
+
+        currentStaff.setPerAddress1(request.getPerAddress1());
+        currentStaff.setPerAddress2(request.getPerAddress2());
+        currentStaff.setEmergencyContactName(request.getEmergencyContactName());
+        currentStaff.setEmergencyPhoneNumber(request.getEmergencyPhoneNumber());
+        currentStaff.setPerPhone(request.getPerPhone());
+        MultipartFile staffImg = request.getImage();
+
+        if (staffImg != null) {
+            try {
+                ObjectWriteResponse objectResponse = this.minioService.uploadFile(staffImg.getOriginalFilename() + Instant.now().toString(), staffImg.getContentType(), staffImg.getInputStream(), staffImg.getSize());
+                String accessResourceURL = UrlUtil.buildUrl(minioUrl, objectResponse);
+                currentStaff.setAvatarImg(accessResourceURL);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+                return false;
+            }
+        }
+        this.accountRepository.save(currentStaff);
+        return true;
     }
 
+
+    //Fields Admin could update: citizenID, workingAddress, role,gender, dob
     private boolean adminUpdateProfile(Long accountId, UpdateProfileRequest request) {
-        return false;
+        Account updatedAccount = this.accountRepository.findById(accountId)
+                .orElseThrow(() -> ApiException.create(HttpStatus.METHOD_NOT_ALLOWED).withMessage("Không tìm thấy người tài khoản cập nhật"));
+
+        updatedAccount.setWorkingPlace(request.getWorkingPlace());
+        updatedAccount.setCitizenID(request.getCitizenID());
+        updatedAccount.setDob(request.getDob());
+        updatedAccount.setGender(request.getGender());
+
+        if (request.getRoleCode() != null && !request.getRoleCode().isEmpty()) {
+            Role role = this.roleRepository.findRoleByCode(request.getRoleCode())
+                    .orElseThrow(() -> ApiException.create(HttpStatus.NOT_FOUND).withMessage("Không thể tìm thấy vai trò:" + request.getRoleCode()));
+            updatedAccount.setRole(role);
+        }
+        this.accountRepository.save(updatedAccount);
+        return true;
     }
 
 

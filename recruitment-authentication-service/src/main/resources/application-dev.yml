@@ -20,15 +20,14 @@ logging:
   file:
     path: /logs
     name: /logs/application.log
-
 minio:
-  bucket:
-    name: vietdang
   access:
-    name: vietdang
-    secret: TNN8uXMSOtxOkWm
-  url: http://minio:9000
-  endpoint: https://beta.api.dentgo.vn
+    key: YAatnHUWTGBGrJ6jq7WP
+    secret: eoY8R6yJIaMjSr73YxPFmE4FyMEHQoRgcyK43lKL
+  url: http://localhost:9000
+  bucket:
+    name: recruitment-system-resource
+  endpoint: http://localhost:9000
 
 eureka:
   client:

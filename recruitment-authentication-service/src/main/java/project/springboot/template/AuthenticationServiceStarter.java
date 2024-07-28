@@ -88,6 +88,7 @@ public class AuthenticationServiceStarter {
         if (adminAccounts.isEmpty()) {
             Role adminRole = roleRepository.findRoleByCode("ADMIN").orElseThrow(() -> new NotFoundException("Could not found Admin Role"));
             Account adminAccount = Account.builder()
+                    .lastname("Administrator")
                     .email("admin@gmail.com")
                     .password(passwordEncoder.encode("admin@123"))
                     .role(adminRole)
@@ -102,6 +103,7 @@ public class AuthenticationServiceStarter {
         if (adminAccounts.isEmpty()) {
             Role hrManagerRole = roleRepository.findRoleByCode("HR_MANAGER").orElseThrow(() -> new NotFoundException("Could not found HR Manager Role"));
             Account hrManagerAccount = Account.builder()
+                    .lastname("Le Quang Dieu")
                     .email("hrmanager@gmail.com")
                     .password(passwordEncoder.encode("hrmanager@123"))
                     .role(hrManagerRole)
