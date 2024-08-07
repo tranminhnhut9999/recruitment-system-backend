@@ -31,6 +31,16 @@ spring:
     use-code-as-default-message: false
   application:
     name: tracking-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+rabbitmq:
+  queue: sms_notification
+  exchange: sms_exchange
+  routingkey: sms_routingkey
 
 jwt:
   secret: jaklsdj1283e7osalkd
@@ -63,6 +73,8 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
+
+
 
 
 

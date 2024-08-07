@@ -236,6 +236,8 @@ public class AccountService {
         Account updatedAccount = this.accountRepository.findById(accountId)
                 .orElseThrow(() -> ApiException.create(HttpStatus.METHOD_NOT_ALLOWED).withMessage("Không tìm thấy người tài khoản cập nhật"));
 
+        updatedAccount.setFirstname(request.getFirstname());
+        updatedAccount.setLastname(request.getLastname());
         updatedAccount.setWorkingPlace(request.getWorkingPlace());
         updatedAccount.setCitizenID(request.getCitizenID());
         updatedAccount.setDob(request.getDob());

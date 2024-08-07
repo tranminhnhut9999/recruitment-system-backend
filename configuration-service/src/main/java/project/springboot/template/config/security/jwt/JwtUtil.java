@@ -16,9 +16,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Component
@@ -117,5 +115,19 @@ public class JwtUtil implements Serializable {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public List<String> getAuthorizesFromToken(String token) {
+        Claims claims = this.getAllClaimsFromToken(token);
+        List<Map<String, String>> authorities = (List<Map<String, String>>) claims.get("authorities");
+
+        List<String> authorityList = new ArrayList<>();
+        if (authorities != null) {
+            for (Map<String, String> authority : authorities) {
+                authorityList.add(authority.get("authority"));
+            }
+        }
+
+        return authorityList;
     }
 }

@@ -1,5 +1,9 @@
 package project.springboot.template.service;
 
+import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -7,6 +11,7 @@ import project.springboot.template.clients.TrackingApplicationClient;
 import project.springboot.template.clients.models.CandidateApplicationResponse;
 import project.springboot.template.clients.models.EApplyStatus;
 import project.springboot.template.config.security.TokenHolder;
+import project.springboot.template.config.security.jwt.JwtUtil;
 import project.springboot.template.dto.request.CreateJobRequest;
 import project.springboot.template.dto.request.UpdateJobRequest;
 import project.springboot.template.dto.response.JobDetailResponse;
@@ -17,6 +22,7 @@ import project.springboot.template.entity.common.ApiResponse;
 import project.springboot.template.repository.JobRepository;
 import project.springboot.template.util.ObjectUtil;
 import project.springboot.template.util.SecurityUtil;
+import project.springboot.template.util.specification.JobJPASpecificationBuilder;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -25,14 +31,17 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class JobService {
+    private static final Logger log = LoggerFactory.getLogger(JobService.class);
     private final JobRepository jobRepository;
     private final HttpService httpService;
     private final TrackingApplicationClient trackingApplicationClient;
+    private final JwtUtil jwtUtil;
 
-    public JobService(JobRepository jobRepository, HttpService request, TrackingApplicationClient trackingApplicationClient) {
+    public JobService(JobRepository jobRepository, HttpService request, TrackingApplicationClient trackingApplicationClient, JwtUtil jwtUtil, JwtUtil jwtUtil1) {
         this.jobRepository = jobRepository;
         this.httpService = request;
         this.trackingApplicationClient = trackingApplicationClient;
+        this.jwtUtil = jwtUtil1;
     }
 
     public JobDetailResponse createJob(CreateJobRequest createJobRequest) {
@@ -63,41 +72,52 @@ public class JobService {
         return ObjectUtil.copyProperties(savedJob, new JobDetailResponse(), JobDetailResponse.class, true);
     }
 
-    public List<JobResponse> getHiringJob() {
-        List<Job> hiringJobs = jobRepository.findAllByStatusIs(true);
-        List<JobResponse> jobResponses = hiringJobs.stream()
+    public List<JobResponse> getHiringJob(String query, String department) {
+
+        JobJPASpecificationBuilder jobJPASpecificationBuilder = JobJPASpecificationBuilder.specifications();
+        Specification<Job> jobSpecification = jobJPASpecificationBuilder
+                .byStatus(true)
+                .bySearchingQuery(query)
+                .byDepartment(department).build();
+        List<Job> hiringJobs = jobRepository.findAll(jobSpecification);
+
+        return hiringJobs.stream()
                 .map(job -> {
                     JobResponse jobResponse = ObjectUtil.copyProperties(job, new JobResponse(), JobResponse.class, true);
                     jobResponse.setKeywords(this.extractKeyword(job.getKeywords()));
                     jobResponse.setRecruiters(this.extractKeyword(job.getRecruiters()));
                     return jobResponse;
                 }).collect(Collectors.toList());
-
-        return jobResponses;
     }
 
     public List<JobResponse> getAllJob() {
-        List<Job> hiringJobs = jobRepository.findAll();
-        List<JobResponse> jobResponses = hiringJobs.stream()
+        List<Job> hiringJobs;
+        if (SecurityUtil.isCurrentUserHasAuthority("HR_MANAGER")) {
+            hiringJobs = jobRepository.findAll();
+        } else if (SecurityUtil.isCurrentUserHasAuthority("STAFF")) {
+            // TODO: get EMAIL
+            hiringJobs = jobRepository.findJobByRecruitersLike("");
+        } else {
+            throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Bạn không có thẩm quyền để thực hiện chức năng này");
+        }
+
+        return hiringJobs.stream()
                 .map(job -> {
                     JobResponse jobResponse = ObjectUtil.copyProperties(job, new JobResponse(), JobResponse.class, true);
                     jobResponse.setKeywords(this.extractKeyword(job.getKeywords()));
                     String userEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN).withMessage("Không tìm thấy email"));
-                    ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> response =
-                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.ALL, job.getId(), userEmail);
-                    if (Objects.equals(Objects.requireNonNull(response.getBody()).getStatusCode(), HttpStatus.OK.getReasonPhrase())) {
-                        List<CandidateApplicationResponse> data = response.getBody().getData();
-                        if (data == null) {
-                            jobResponse.setNumberApplications(0);
-                        } else {
-                            jobResponse.setNumberApplications(data.size());
-                        }
-                    }
+//                    ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> response =
+//                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.ALL, job.getId(), userEmail);
+//                    if (Objects.equals(Objects.requireNonNull(response.getBody()).getStatusCode(), HttpStatus.OK.getReasonPhrase())) {
+//                        List<CandidateApplicationResponse> data = response.getBody().getData();
+//                        if (data == null) {
+//                            jobResponse.setNumberApplications(0);
+//                        } else {
+//                            jobResponse.setNumberApplications(data.size());
+//                        }
+//                    }
                     return jobResponse;
                 }).collect(Collectors.toList());
-
-
-        return jobResponses;
     }
 
     public JobDetailResponse getHiringDetailJob(Long id) {

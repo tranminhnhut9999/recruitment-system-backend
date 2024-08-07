@@ -71,14 +71,14 @@ public class AuthenticationServiceStarter {
             hrStaffRole.setName("HR Staff");
             hrStaffRole.setCode("HR_STAFF");
 
-            Role departmentRole = new Role();
-            departmentRole.setName("Department");
-            departmentRole.setCode("DEPARTMENT");
+//            Role departmentRole = new Role();
+//            departmentRole.setName("Department");
+//            departmentRole.setCode("DEPARTMENT");
 
             roles.add(adminRole);
             roles.add(hrManagerRole);
             roles.add(hrStaffRole);
-            roles.add(departmentRole);
+//            roles.add(departmentRole);
             roleRepository.saveAllAndFlush(roles);
         }
     }

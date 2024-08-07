@@ -22,8 +22,8 @@ public class JobController {
 
     // Get Hiring Jobs
     @GetMapping("/hiring")
-    public ResponseEntity<ApiResponse<List<JobResponse>>> getHiringJobs() {
-        return ResponseEntity.ok(ApiResponse.success(this.jobService.getHiringJob()));
+    public ResponseEntity<ApiResponse<List<JobResponse>>> getHiringJobs(@RequestParam(defaultValue = "") String query, @RequestParam(defaultValue = "") String department) {
+        return ResponseEntity.ok(ApiResponse.success(this.jobService.getHiringJob(query, department)));
     }
 
     // Get Hiring Detail Job

@@ -80,9 +80,9 @@ public class JwtUtil implements Serializable {
             oos.writeObject(userDetails.getAuthorities());
             byte[] bytes = bos.toByteArray();
             messageDigest.update(bytes);
-            String myHash = DatatypeConverter
-                    .printHexBinary(messageDigest.digest()).toUpperCase();
-            claims.put("authorities", myHash);
+//            String myHash = DatatypeConverter
+//                    .printHexBinary(messageDigest.digest()).toUpperCase();
+            claims.put("authorities", userDetails.getAuthorities());
         } catch (NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }

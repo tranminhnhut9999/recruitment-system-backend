@@ -41,4 +41,5 @@ public class Job extends BaseEntity {
     private String recruiters;
     private String jobType = "";
     private String workingPlace = "";
+    private int numberApplications = 0;
 }
