@@ -174,7 +174,7 @@ public class JobService {
             for (int i = 0; i < recruiters.size(); i++) {
                 recruiterAsStringBuffer.append(recruiters.get(i));
                 if (i < recruiters.size() - 1) {
-                    recruiterAsStringBuffer.append(",");
+                    recruiterAsStringBuffer.append("-");
                 }
             }
             updatedJob.setRecruiters(recruiterAsStringBuffer.toString());
