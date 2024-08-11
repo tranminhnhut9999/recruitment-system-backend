@@ -47,13 +47,13 @@ public class ConfigurationController {
         return ResponseEntity.ok(ApiResponse.success(jobTypes));
     }
 
-    @GetMapping("/job-type/{id}")
+    @GetMapping("/job-types/{id}")
     public ResponseEntity<ApiResponse<JobTypeResponseDTO>> getJobTypeById(@PathVariable Long id) {
         JobTypeResponseDTO responseDTO = jobTypeService.getJobTypeById(id);
         return ResponseEntity.ok(ApiResponse.success(responseDTO));
     }
 
-    @DeleteMapping("/job-type/{id}")
+    @DeleteMapping("/job-types/{id}")
     public ResponseEntity<ApiResponse<Boolean>> deleteJobTypeById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(this.jobTypeService.deleteJobTypeById(id)));
     }

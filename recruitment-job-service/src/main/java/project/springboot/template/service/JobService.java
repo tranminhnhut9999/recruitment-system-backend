@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import project.springboot.template.clients.TrackingApplicationClient;
 import project.springboot.template.clients.models.CandidateApplicationResponse;
@@ -92,11 +93,12 @@ public class JobService {
 
     public List<JobResponse> getAllJob() {
         List<Job> hiringJobs;
+        String userEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN).withMessage("Không tìm thấy email"));
         if (SecurityUtil.isCurrentUserHasAuthority("HR_MANAGER")) {
             hiringJobs = jobRepository.findAll();
-        } else if (SecurityUtil.isCurrentUserHasAuthority("STAFF")) {
+        } else if (SecurityUtil.isCurrentUserHasAuthority("HR_STAFF")) {
             // TODO: get EMAIL
-            hiringJobs = jobRepository.findJobByRecruitersLike("");
+            hiringJobs = jobRepository.findJobByRecruitersLike(userEmail);
         } else {
             throw ApiException.create(HttpStatus.FORBIDDEN).withMessage("Bạn không có thẩm quyền để thực hiện chức năng này");
         }
@@ -105,25 +107,14 @@ public class JobService {
                 .map(job -> {
                     JobResponse jobResponse = ObjectUtil.copyProperties(job, new JobResponse(), JobResponse.class, true);
                     jobResponse.setKeywords(this.extractKeyword(job.getKeywords()));
-                    String userEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN).withMessage("Không tìm thấy email"));
-//                    ResponseEntity<ApiResponse<List<CandidateApplicationResponse>>> response =
-//                            this.trackingApplicationClient.getApplications("Bearer " + TokenHolder.getToken(), EApplyStatus.ALL, job.getId(), userEmail);
-//                    if (Objects.equals(Objects.requireNonNull(response.getBody()).getStatusCode(), HttpStatus.OK.getReasonPhrase())) {
-//                        List<CandidateApplicationResponse> data = response.getBody().getData();
-//                        if (data == null) {
-//                            jobResponse.setNumberApplications(0);
-//                        } else {
-//                            jobResponse.setNumberApplications(data.size());
-//                        }
-//                    }
                     return jobResponse;
                 }).collect(Collectors.toList());
     }
 
     public JobDetailResponse getHiringDetailJob(Long id) {
         Job hiringJob = jobRepository.findJobByIdAndStatus(id, true)
-                .orElseThrow(() -> ApiException.create(HttpStatus.BAD_REQUEST).withMessage("Không tìm thấy job:" + id));
-        if (hiringJob.isStatus() == false) {
+                .orElseThrow(() -> ApiException.create(HttpStatus.BAD_REQUEST).withMessage("Công việc đã đóng:" + id));
+        if (!hiringJob.isStatus()) {
             throw ApiException.create(HttpStatus.BAD_REQUEST).withMessage("Công việc không khả dụng");
         }
         JobDetailResponse jobResponse = ObjectUtil.copyProperties(hiringJob, new JobDetailResponse(), JobDetailResponse.class, true);
@@ -161,6 +152,7 @@ public class JobService {
                 .orElseThrow(() -> ApiException.create(HttpStatus.BAD_REQUEST).withMessage("Không tìm thấy công việc:" + id));
 
         updatedJob.setDepartment(updateJobRequest.getDepartment());
+        updatedJob.setStartDate(updateJobRequest.getStartDate());
         updatedJob.setEndDate(updateJobRequest.getEndDate());
         updatedJob.setDescription(updateJobRequest.getDescription());
         updatedJob.setTitle(updateJobRequest.getTitle());
@@ -169,11 +161,25 @@ public class JobService {
         updatedJob.setSalaryRangeFrom(updateJobRequest.getSalaryRangeFrom());
         updatedJob.setStatus(updateJobRequest.isStatus());
         updatedJob.setRequiredExperience(updateJobRequest.getRequiredExperience());
+        updatedJob.setJobType(updateJobRequest.getJobType());
 
         if (!updateJobRequest.getKeywords().isEmpty()) {
             String keyworkAsString = String.join("-", updateJobRequest.getKeywords());
             updatedJob.setKeywords(keyworkAsString);
         }
+
+        if (!updateJobRequest.getRecruiters().isEmpty()) {
+            StringBuilder recruiterAsStringBuffer = new StringBuilder();
+            List<String> recruiters = updateJobRequest.getRecruiters();
+            for (int i = 0; i < recruiters.size(); i++) {
+                recruiterAsStringBuffer.append(recruiters.get(i));
+                if (i < recruiters.size() - 1) {
+                    recruiterAsStringBuffer.append(",");
+                }
+            }
+            updatedJob.setRecruiters(recruiterAsStringBuffer.toString());
+        }
+
         Job savedJob = jobRepository.save(updatedJob);
         return ObjectUtil.copyProperties(savedJob, new JobDetailResponse(), JobDetailResponse.class, true);
     }
@@ -188,5 +194,19 @@ public class JobService {
             return false;
         }
         return true;
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void checkJobsStartingToday() {
+        List<Job> jobsStartingToday = jobRepository.findAllJobsWithStartDateToday();
+
+        if (!jobsStartingToday.isEmpty()) {
+            // Process the jobs as needed
+            jobsStartingToday.forEach(job -> {
+                job.setStatus(true);
+                System.out.println("Job starting today: " + job.getTitle());
+            });
+            this.jobRepository.saveAll(jobsStartingToday);
+        }
     }
 }

@@ -18,4 +18,7 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
 
     @Query("SELECT j FROM Job j WHERE j.recruiters LIKE CONCAT('%',:email,'%')")
     List<Job> findJobByRecruitersLike(@Param("email") String email);
+
+    @Query("SELECT j FROM Job j WHERE DATE(j.startDate) = DATE(CURRENT_DATE)")
+    List<Job> findAllJobsWithStartDateToday();
 }

@@ -36,4 +36,7 @@ public class UpdateJobRequest {
     private String position;
     private boolean status = false;
     private Float requiredExperience = 0.0F;
+    private String jobType;
+    private List<String> recruiters = new ArrayList<>();
+    private Instant startDate;
 }

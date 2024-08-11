@@ -51,7 +51,7 @@ public class JobController {
     }
 
     // Update Job
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}")
     public ResponseEntity<ApiResponse<JobDetailResponse>> updateJob(@PathVariable("id") Long id, @RequestBody UpdateJobRequest request) {
         return ResponseEntity.ok(ApiResponse.success(this.jobService.updateJob(id, request)));
     }
