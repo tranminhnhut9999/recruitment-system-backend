@@ -39,4 +39,5 @@ public class UpdateJobRequest {
     private String jobType;
     private List<String> recruiters = new ArrayList<>();
     private Instant startDate;
+    private String workingPlace;
 }

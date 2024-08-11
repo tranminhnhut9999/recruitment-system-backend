@@ -17,7 +17,18 @@ public class EmailController {
     private EmailService emailService;
 
     @PostMapping
-    public void sendSimpleEmail(@RequestBody SendEmailRequest request) {
+    public void sendEmailByStaff(@RequestBody SendEmailRequest request) {
+        String senderEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN));
+
+        if (request.isHtml()) {
+            emailService.sendHtmlMessage(senderEmail, request.getRecipient(), request.getSubject(), request.getContent());
+        } else {
+            emailService.sendSimpleMessage(senderEmail, request.getRecipient(), request.getSubject(), request.getContent());
+        }
+    }
+
+    @PostMapping("/system")
+    public void sendSystemEmail(@RequestBody SendEmailRequest request) {
         String senderEmail = SecurityUtil.getCurrentUserEmail().orElseThrow(() -> ApiException.create(HttpStatus.FORBIDDEN));
 
         if (request.isHtml()) {

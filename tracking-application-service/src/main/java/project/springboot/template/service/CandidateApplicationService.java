@@ -40,8 +40,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,6 +138,93 @@ public class CandidateApplicationService {
 
         this.candidateApplicationRepository.save(candidateApplication);
         publishNewApplicationEvent(jobId);
+
+        SendEmailRequest sendEmailRequest = new SendEmailRequest();
+        sendEmailRequest.setHtml(true);
+        sendEmailRequest.setRecipient(candidateApplication.getEmail());
+        sendEmailRequest.setSubject("Hồ Sơ Được Tiếp Nhận");
+
+        String template = "<!DOCTYPE html>\n" +
+                "<html lang=\"vi\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Đã nhận hồ sơ ứng tuyển</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            color: #333;\n" +
+                "            line-height: 1.6;\n" +
+                "            background-color: #f4f4f4;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            background-color: #ffffff;\n" +
+                "            margin: 50px auto;\n" +
+                "            padding: 20px;\n" +
+                "            max-width: 600px;\n" +
+                "            border-radius: 8px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            text-align: center;\n" +
+                "            padding-bottom: 20px;\n" +
+                "            border-bottom: 1px solid #eeeeee;\n" +
+                "        }\n" +
+                "        .header img {\n" +
+                "            max-width: 150px;\n" +
+                "            margin-bottom: 20px;\n" +
+                "        }\n" +
+                "        .header h1 {\n" +
+                "            font-size: 24px;\n" +
+                "            margin: 0;\n" +
+                "            color: #333;\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            padding: 20px 0;\n" +
+                "        }\n" +
+                "        .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "            font-size: 16px;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            text-align: center;\n" +
+                "            padding-top: 20px;\n" +
+                "            border-top: 1px solid #eeeeee;\n" +
+                "        }\n" +
+                "        .footer p {\n" +
+                "            font-size: 14px;\n" +
+                "            color: #777;\n" +
+                "        }\n" +
+                "        .footer a {\n" +
+                "            color: #007bff;\n" +
+                "            text-decoration: none;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"header\">\n" +
+                "            <img src=\"company-logo-url.png\" alt=\"Logo Công Ty\">\n" +
+                "            <h1>Đã nhận hồ sơ ứng tuyển</h1>\n" +
+                "        </div>\n" +
+                "        <div class=\"content\">\n" +
+                "            <p>Xin chào <candidate-name>,</p>\n" +
+                "            <p>Cảm ơn bạn đã ứng tuyển công ty chúng tôi. Chúng tôi đã nhận được hồ sơ của bạn và đội ngũ của chúng tôi đang xem xét kỹ năng và kinh nghiệm của bạn.</p>\n" +
+                "            <p>Chúng tôi đánh giá cao sự quan tâm của bạn đến việc gia nhập đội ngũ của chúng tôi và sẽ sớm liên lạc với bạn về các bước tiếp theo trong quy trình tuyển dụng. Nếu kỹ năng và kinh nghiệm của bạn phù hợp với yêu cầu của vị trí, chúng tôi sẽ liên hệ để trao đổi thêm về cơ hội này.</p>\n" +
+                "            <p>Trong thời gian chờ đợi, nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ với chúng tôi qua email tranminhnhut14079999@gmail.com.</p>\n" +
+                "            <p>Một lần nữa, cảm ơn bạn đã cân nhắc công ty là điểm đến tiếp theo trong sự nghiệp của mình. Chúng tôi chúc bạn mọi điều tốt đẹp trong quá trình tìm kiếm việc làm.</p>\n" +
+                "            <p>Trân trọng,</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>\n";
+
+        template = template.replace("<candidate-name>", request.getName());
+        sendEmailRequest.setContent(template);
+        emailClient.sendEmailWithoutToken(sendEmailRequest);
+
         return ObjectUtil.copyProperties(candidateApplication, new CandidateApplicationResponse(), CandidateApplicationResponse.class, true);
     }
 
@@ -185,7 +270,7 @@ public class CandidateApplicationService {
             sendEmailRequest.setSubject("Hồ Sơ Của Bạn Đã Được Chuyển Trạng Thái " + statusLog.getStatus().getName());
             String token = "Bearer " + TokenHolder.getToken();
             log.info("TOKEN:" + token);
-            emailClient.sendEmail(token, sendEmailRequest);
+            emailClient.sendEmailWithToken(token, sendEmailRequest);
         }
 
         return ObjectUtil.copyProperties(statusLog, new StatusLogResponse(), StatusLogResponse.class, true);

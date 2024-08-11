@@ -162,7 +162,7 @@ public class JobService {
         updatedJob.setStatus(updateJobRequest.isStatus());
         updatedJob.setRequiredExperience(updateJobRequest.getRequiredExperience());
         updatedJob.setJobType(updateJobRequest.getJobType());
-
+        updatedJob.setWorkingPlace(updateJobRequest.getWorkingPlace());
         if (!updateJobRequest.getKeywords().isEmpty()) {
             String keyworkAsString = String.join("-", updateJobRequest.getKeywords());
             updatedJob.setKeywords(keyworkAsString);
