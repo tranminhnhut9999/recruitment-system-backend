@@ -202,7 +202,7 @@ public class CandidateApplicationService {
                 "            text-decoration: none;\n" +
                 "        }\n" +
                 "    </style>\n" +
-                "</head>\n" +q
+                "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"header\">\n" +
