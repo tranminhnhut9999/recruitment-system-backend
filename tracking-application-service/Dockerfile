@@ -1,10 +1,20 @@
-FROM maven:3.5.4-jdk-8-alpine as build
-ADD pom.xml ./
-RUN mvn verify --fail-never
-ADD / /.
-RUN mvn clean package
+# Use an official OpenJDK 11 runtime as a parent image
+FROM openjdk:11-jre-slim
 
-FROM openjdk:8-jdk-alpine
-WORKDIR app
-COPY --from=build target/vietdang-0.0.1-SNAPSHOT.jar /runner.jar
-ENTRYPOINT java -jar /runner.jar
+# Set the working directory
+WORKDIR /app
+
+# Copy the service's jar file to the container
+COPY target/tracking-application-service-0.0.1-SNAPSHOT.jar /app/tracking-application-service-0.0.1-SNAPSHOT.jar
+
+# Set environment variables for MySQL
+ENV MYSQL_HOST=tracking-db
+ENV MYSQL_DATABASE=recruitment-tracking-application-db
+ENV MYSQL_USER=trackinguser
+ENV MYSQL_PASSWORD=trackingpassword
+
+# Expose the service's port
+EXPOSE 8080
+
+# Run the jar file
+ENTRYPOINT ["java", "-jar", "/app/tracking-application-service-0.0.1-SNAPSHOT.jar"]

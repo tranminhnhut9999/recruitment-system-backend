@@ -24,7 +24,7 @@ minio:
   access:
     key: YAatnHUWTGBGrJ6jq7WP
     secret: eoY8R6yJIaMjSr73YxPFmE4FyMEHQoRgcyK43lKL
-  url: http://localhost:9000
+  url: http://minio:9000
   bucket:
     name: recruitment-system-resource
   endpoint: http://localhost:9000

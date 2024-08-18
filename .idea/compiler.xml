@@ -24,7 +24,7 @@
           <entry name="$MAVEN_REPOSITORY$/com/sun/istack/istack-commons-runtime/3.0.7/istack-commons-runtime-3.0.7.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/jvnet/staxex/stax-ex/1.8/stax-ex-1.8.jar" />
           <entry name="$MAVEN_REPOSITORY$/com/sun/xml/fastinfoset/FastInfoset/1.2.15/FastInfoset-1.2.15.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.16/lombok-1.18.16.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.20/lombok-1.18.20.jar" />
         </processorPath>
         <module name="job-service" />
         <module name="tracking-application-service" />
@@ -36,13 +36,13 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="authentication-service" options="-parameters" />
-      <module name="configuration-service" options="-parameters" />
-      <module name="email-service" options="-parameters" />
-      <module name="job-service" options="-parameters" />
+      <module name="authentication-service" options="-parameters --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
+      <module name="configuration-service" options="-parameters --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
+      <module name="email-service" options="-parameters --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
+      <module name="job-service" options="-parameters --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
       <module name="recruitment-gateway" options="-parameters" />
       <module name="service-discovery" options="-parameters" />
-      <module name="tracking-application-service" options="-parameters" />
+      <module name="tracking-application-service" options="-parameters --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
     </option>
   </component>
 </project>

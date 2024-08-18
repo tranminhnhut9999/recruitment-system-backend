@@ -1,11 +1,10 @@
 services:
-  # -------------------minio -------------------#
+  # ------------------- MinIO ------------------- #
   minio:
-    env_file: .env
     command: server /data --console-address ":9001"
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
     image: quay.io/minio/minio:latest
     ports:
       - "9000:9000"
@@ -13,5 +12,250 @@ services:
     volumes:
       - ./data/minio:/data
     restart: always
-networks:
-  app:
+
+  # ------------------- Configuration Service ------------------- #
+  configuration-db:
+    image: mysql:8.0
+    container_name: configuration-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: configuration-db
+      MYSQL_USER: configuser
+      MYSQL_PASSWORD: configpassword
+    ports:
+      - "3311:3306"
+    volumes:
+      - configuration-db-data:/var/lib/mysql
+      - ./init-scripts/configuration-db-init.sql:/docker-entrypoint-initdb.d/configuration-db-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot -prootpassword"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  configuration-service:
+    build:
+      context: ./configuration-service
+    container_name: configuration-service
+    depends_on:
+      configuration-db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: configuration-db
+      MYSQL_DATABASE: configuration-db
+      MYSQL_USER: configuser
+      MYSQL_PASSWORD: configpassword
+    ports:
+      - "8084:8080"
+
+  # ------------------- Email Service ------------------- #
+  email-db:
+    image: mysql:8.0
+    container_name: email-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: email-db
+      MYSQL_USER: emailuser
+      MYSQL_PASSWORD: emailpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - email-db-data:/var/lib/mysql
+      - ./init-scripts/email-db-init.sql:/docker-entrypoint-initdb.d/email-db-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot -prootpassword"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  email-service:
+    build:
+      context: ./email-service
+    container_name: email-service
+    depends_on:
+      email-db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: email-db
+      MYSQL_DATABASE: email-db
+      MYSQL_USER: emailuser
+      MYSQL_PASSWORD: emailpassword
+    ports:
+      - "8085:8080"
+
+  # ------------------- Authentication Service ------------------- #
+  authentication-db:
+    image: mysql:8.0
+    container_name: authentication-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: recruitment-account-db
+      MYSQL_USER: authuser
+      MYSQL_PASSWORD: authpassword
+    ports:
+      - "3308:3306"
+    volumes:
+      - authentication-db-data:/var/lib/mysql
+      - ./init-scripts/authentication-db-init.sql:/docker-entrypoint-initdb.d/authentication-db-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot -prootpassword"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  recruitment-authentication-service:
+    build:
+      context: ./recruitment-authentication-service
+    container_name: recruitment-authentication-service
+    depends_on:
+      authentication-db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: authentication-db
+      MYSQL_DATABASE: recruitment-account-db
+      MYSQL_USER: authuser
+      MYSQL_PASSWORD: authpassword
+    ports:
+      - "8081:8080"
+
+  # ------------------- Job Service ------------------- #
+  job-db:
+    image: mysql:8.0
+    container_name: job-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: recruitment-job-db
+      MYSQL_USER: jobuser
+      MYSQL_PASSWORD: jobpassword
+    ports:
+      - "3309:3306"
+    volumes:
+      - job-db-data:/var/lib/mysql
+      - ./init-scripts/job-db-init.sql:/docker-entrypoint-initdb.d/job-db-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot -prootpassword"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  recruitment-job-service:
+    build:
+      context: ./recruitment-job-service
+    container_name: recruitment-job-service
+    depends_on:
+      job-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: job-db
+      MYSQL_DATABASE: recruitment-job-db
+      MYSQL_USER: jobuser
+      MYSQL_PASSWORD: jobpassword
+    ports:
+      - "8082:8080"
+
+  # ------------------- Tracking Service ------------------- #
+  tracking-db:
+    image: mysql:8.0
+    container_name: tracking-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: recruitment-tracking-application-db
+      MYSQL_USER: trackinguser
+      MYSQL_PASSWORD: trackingpassword
+    ports:
+      - "3310:3306"
+    volumes:
+      - tracking-db-data:/var/lib/mysql
+      - ./init-scripts/tracking-db-init.sql:/docker-entrypoint-initdb.d/tracking-db-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -hlocalhost -uroot -prootpassword"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  tracking-application-service:
+    build:
+      context: ./tracking-application-service
+    container_name: tracking-application-service
+    depends_on:
+      tracking-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: tracking-db
+      MYSQL_DATABASE: recruitment-tracking-application-db
+      MYSQL_USER: trackinguser
+      MYSQL_PASSWORD: trackingpassword
+    ports:
+      - "8083:8080"
+
+  # ------------------- API Gateway ------------------- #
+  recruitment-gateway:
+    build:
+      context: ./recruitment-gateway
+    container_name: recruitment-gateway
+    ports:
+      - "8080:8080"
+
+  # ------------------- Service Discovery ------------------- #
+  service-discovery:
+    build:
+      context: ./service-discovery
+    container_name: service-discovery
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://localhost:8761/eureka/ || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  # ------------------- RabbitMQ ------------------- #
+    # ------------------- RabbitMQ ------------------- #
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: 94c84df63abe
+    mac_address: 02:42:ac:11:00:02
+    environment:
+      - RABBITMQ_DATA_DIR=/var/lib/rabbitmq
+      - RABBITMQ_VERSION=3.13.6
+      - RABBITMQ_PGP_KEY_ID=0x0A9AF2115F4687BD29803A206B73A36E6026DFCA
+      - RABBITMQ_HOME=/opt/rabbitmq
+      - HOME=/var/lib/rabbitmq
+      - LANG=C.UTF-8
+      - LANGUAGE=C.UTF-8
+      - LC_ALL=C.UTF-8
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: no
+    labels:
+      - 'org.opencontainers.image.ref.name=ubuntu'
+      - 'org.opencontainers.image.version=22.04'
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+
+
+volumes:
+  configuration-db-data:
+  email-db-data:
+  authentication-db-data:
+  job-db-data:
+  tracking-db-data:
+  rabbitmq-data:

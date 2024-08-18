@@ -11,8 +11,8 @@
     <groupId>org.project</groupId>
     <artifactId>recruitment-gateway</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>recruitment-gateway</name>
-    <description>recruitment-gateway</description>
+    <name>api-gateway</name>
+    <description>api-gateway</description>
     <url/>
     <licenses>
         <license/>
@@ -64,5 +64,12 @@
             </plugin>
         </plugins>
     </build>
-
+    <profiles>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <activatedProperties>prod</activatedProperties>
+            </properties>
+        </profile>
+    </profiles>
 </project>
